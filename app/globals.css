@@ -1,0 +1,77 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-primary:     #1E40AF;
+    --color-accent:      #F59E0B;
+    --color-bg:          #FAFAF9;
+    --color-text:        #1C1917;
+    --color-text-muted:  #6B7280;
+    --color-border:      #E5E7EB;
+  }
+
+  html {
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-family: "Noto Sans JP", "Hiragino Sans", sans-serif;
+  }
+
+  /* フォーカスリング統一 */
+  *:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* iOS Safari ズーム防止: input 系は必ず16px以上 */
+  input, select, textarea {
+    font-size: max(16px, 1rem);
+  }
+}
+
+@layer components {
+  /* カード */
+  .card {
+    @apply bg-white rounded-md shadow-card border border-gray-100;
+  }
+
+  /* セクション区切り */
+  .form-section-header {
+    @apply flex items-center gap-3 py-2 px-4 bg-primary-50 border-l-4 border-primary font-display font-bold text-primary text-base;
+  }
+
+  /* チェックボックス行（チェック済みで青背景） */
+  .checkbox-row {
+    @apply flex items-center gap-3 py-2.5 px-3 rounded-md border border-transparent
+           transition-colors duration-150 cursor-pointer select-none;
+  }
+  .checkbox-row:has(input:checked) {
+    @apply bg-primary-50 border-primary-200;
+  }
+  .checkbox-row label {
+    @apply flex-1 text-sm text-gray-800 cursor-pointer;
+  }
+  .checkbox-row:has(input:checked) label {
+    @apply text-primary-800 font-medium;
+  }
+
+  /* ステータスバッジ */
+  .status-badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-bold;
+  }
+}
+
+/* prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
