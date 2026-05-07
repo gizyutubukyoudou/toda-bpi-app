@@ -211,6 +211,18 @@ export default function DashboardPage() {
           </svg>
         </Link>
       )}
+
+      {profile?.role === "manager" && (
+        <Link
+          href="/dashboard/members"
+          className="fixed bottom-6 right-6 flex items-center gap-2 bg-primary text-white px-4 py-3 rounded-full shadow-card-md hover:bg-primary/90 active:scale-95 transition-all z-50 text-sm font-medium"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3M13.5 4.5a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM3 20.25a6.75 6.75 0 0 1 13.5 0v.75H3v-.75Z" />
+          </svg>
+          メンバー管理
+        </Link>
+      )}
     </>
   );
 }
