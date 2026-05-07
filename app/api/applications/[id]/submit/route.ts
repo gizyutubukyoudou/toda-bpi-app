@@ -3,7 +3,8 @@ import { getAdminClient } from "@/lib/supabase-admin";
 import { verifyTokenAndGetProfile } from "@/lib/auth-server";
 import { sendEmail } from "@/lib/email";
 import { rowToApp } from "@/lib/db";
-import { extractCheckedItems } from "@/lib/types";
+import { extractCheckedBySection } from "@/lib/types";
+import { createApprovalToken } from "@/lib/approval-token";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL!;
 
@@ -29,7 +30,7 @@ export async function POST(
 
   const { data: reviewers } = await admin
     .from("profiles")
-    .select("email, display_name")
+    .select("email, display_name, role")
     .eq("work_site_name", row.work_site_name)
     .in("role", ["supervisor", "manager"]);
 
@@ -39,27 +40,49 @@ export async function POST(
     .eq("id", user.id)
     .single();
 
-  const app     = rowToApp(row as Record<string, unknown>);
-  const items   = extractCheckedItems(app);
-  const itemHtml = items.map((i) => `<li>${i}</li>`).join("");
+  const app      = rowToApp(row as Record<string, unknown>);
+  const sections = extractCheckedBySection(app);
+
+  const sectionHtml = (label: string, items: string[]) =>
+    items.length === 0 ? "" :
+    `<tr><td style="padding:6px 12px 2px 0;color:#666;vertical-align:top;white-space:nowrap">${label}</td>
+     <td style="padding:6px 0 2px 0">${items.join("、")}</td></tr>`;
 
   for (const reviewer of reviewers ?? []) {
+    const approveToken = createApprovalToken(appId, reviewer.email);
+    const approveUrl   = `${APP_URL}/api/applications/${appId}/email-approve?email=${encodeURIComponent(reviewer.email)}&token=${approveToken}`;
+    const isManager    = reviewer.role === "manager";
+
     await sendEmail(
       { email: reviewer.email, name: reviewer.display_name },
       `【火気使用届】新規申請が届きました — ${row.work_site_name}`,
-      `
-        <p>${reviewer.display_name} 様</p>
-        <p>以下の火気使用届が提出されました。確認をお願いします。</p>
-        <table style="border-collapse:collapse;font-size:14px">
-          <tr><td style="padding:4px 12px 4px 0;color:#666">申請者</td><td>${submitter?.display_name ?? ""}（${submitter?.company ?? ""}）</td></tr>
-          <tr><td style="padding:4px 12px 4px 0;color:#666">作業所</td><td>${row.work_site_name}</td></tr>
-          <tr><td style="padding:4px 12px 4px 0;color:#666">使用日</td><td>${row.use_date}</td></tr>
-          <tr><td style="padding:4px 12px 4px 0;color:#666">作業場所</td><td>${row.work_location}</td></tr>
-        </table>
-        <p style="margin-top:12px">チェック済み項目：</p>
-        <ul style="font-size:14px">${itemHtml}</ul>
-        <p><a href="${APP_URL}/apply/${appId}/review" style="background:#1E40AF;color:#fff;padding:8px 16px;text-decoration:none;border-radius:4px">確認する →</a></p>
-      `
+      `<p>${reviewer.display_name} 様</p>
+      <p>以下の火気使用届が提出されました。${isManager ? "事前承認をお願いします。" : "内容を確認してください。"}</p>
+
+      <table style="border-collapse:collapse;font-size:14px;margin-bottom:12px">
+        <tr><td style="padding:4px 12px 4px 0;color:#666;white-space:nowrap">申請者</td><td>${submitter?.display_name ?? ""}（${submitter?.company ?? ""}）</td></tr>
+        <tr><td style="padding:4px 12px 4px 0;color:#666;white-space:nowrap">作業所</td><td>${row.work_site_name}</td></tr>
+        <tr><td style="padding:4px 12px 4px 0;color:#666;white-space:nowrap">使用日</td><td>${row.use_date}</td></tr>
+        <tr><td style="padding:4px 12px 4px 0;color:#666;white-space:nowrap">作業時間</td><td>${row.use_start_time} 〜 ${row.use_end_time}</td></tr>
+        <tr><td style="padding:4px 12px 4px 0;color:#666;white-space:nowrap">作業場所</td><td>${row.work_location}</td></tr>
+        <tr><td style="padding:4px 12px 4px 0;color:#666;white-space:nowrap">火元責任者</td><td>${row.fire_chief_name}</td></tr>
+        <tr><td style="padding:4px 12px 4px 0;color:#666;white-space:nowrap">作業員</td><td>${row.fire_worker_name}</td></tr>
+        <tr><td style="padding:4px 12px 4px 0;color:#666;white-space:nowrap">監視員</td><td>${row.watchman_name}（${row.watchman_company}）</td></tr>
+      </table>
+
+      <table style="border-collapse:collapse;font-size:14px;margin-bottom:16px">
+        ${sectionHtml("火気作業", sections.fireWork)}
+        ${sectionHtml("可燃物", sections.combustibles)}
+        ${sectionHtml("作業環境", sections.environment)}
+        ${sectionHtml("防火対策", sections.prevention)}
+        ${sectionHtml("消火設備", sections.equipment)}
+      </table>
+
+      ${isManager
+        ? `<p><a href="${approveUrl}" style="background:#16a34a;color:#fff;padding:10px 20px;text-decoration:none;border-radius:4px;font-weight:bold">事前承認する →</a>
+           &nbsp;&nbsp;<a href="${APP_URL}/apply/${appId}/review" style="background:#1E40AF;color:#fff;padding:10px 20px;text-decoration:none;border-radius:4px">詳細を確認する →</a></p>`
+        : `<p><a href="${APP_URL}/apply/${appId}/review" style="background:#1E40AF;color:#fff;padding:10px 20px;text-decoration:none;border-radius:4px">確認する →</a></p>`
+      }`
     ).catch(console.error);
   }
 
