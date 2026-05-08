@@ -70,21 +70,29 @@ export async function POST(req: NextRequest) {
   const roleLabel = role === "supervisor" ? "担当職員" : "協力会社（火元責任者）";
 
   // 招待メール送信
-  await sendEmail(
-    { email, name: displayName },
-    `【火気使用届システム】アカウント登録のご案内 — ${workSiteName}`,
-    `<p>${displayName} 様</p>
-    <p>火気使用届システムのアカウントが作成されました。</p>
-    <table style="border-collapse:collapse;font-size:14px;margin:12px 0">
-      <tr><td style="padding:4px 16px 4px 0;color:#666">作業所</td><td>${workSiteName}</td></tr>
-      <tr><td style="padding:4px 16px 4px 0;color:#666">役職</td><td>${roleLabel}</td></tr>
-      <tr><td style="padding:4px 16px 4px 0;color:#666">ログインID</td><td>${email}</td></tr>
-      <tr><td style="padding:4px 16px 4px 0;color:#666">初期パスワード</td><td style="font-family:monospace;font-size:16px;font-weight:bold">${tempPassword}</td></tr>
-    </table>
-    <p>初回ログイン後にパスワードを変更してください。</p>
-    <p><a href="${APP_URL}/login" style="background:#1E40AF;color:#fff;padding:10px 24px;text-decoration:none;border-radius:4px;display:inline-block">ログインする →</a></p>
-    <p style="color:#999;font-size:12px;margin-top:16px">このメールに心当たりがない場合はお手数ですがご連絡ください。</p>`
-  ).catch(console.error);
+  try {
+    await sendEmail(
+      { email, name: displayName },
+      `【火気使用届システム】アカウント登録のご案内 — ${workSiteName}`,
+      `<p>${displayName} 様</p>
+      <p>火気使用届システムのアカウントが作成されました。</p>
+      <table style="border-collapse:collapse;font-size:14px;margin:12px 0">
+        <tr><td style="padding:4px 16px 4px 0;color:#666">作業所</td><td>${workSiteName}</td></tr>
+        <tr><td style="padding:4px 16px 4px 0;color:#666">役職</td><td>${roleLabel}</td></tr>
+        <tr><td style="padding:4px 16px 4px 0;color:#666">ログインID</td><td>${email}</td></tr>
+        <tr><td style="padding:4px 16px 4px 0;color:#666">初期パスワード</td><td style="font-family:monospace;font-size:16px;font-weight:bold">${tempPassword}</td></tr>
+      </table>
+      <p>初回ログイン後にパスワードを変更してください。</p>
+      <p><a href="${APP_URL}/login" style="background:#1E40AF;color:#fff;padding:10px 24px;text-decoration:none;border-radius:4px;display:inline-block">ログインする →</a></p>
+      <p style="color:#999;font-size:12px;margin-top:16px">このメールに心当たりがない場合はお手数ですがご連絡ください。</p>`
+    );
+  } catch (mailErr) {
+    console.error("招待メール送信失敗:", mailErr);
+    return NextResponse.json(
+      { error: `アカウントは作成しましたが招待メールの送信に失敗しました: ${(mailErr as Error).message}` },
+      { status: 500 }
+    );
+  }
 
   return NextResponse.json({ success: true, userId: authUser.user.id });
 }
