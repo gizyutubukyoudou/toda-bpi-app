@@ -97,6 +97,37 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ success: true, userId: authUser.user.id });
 }
 
+export async function DELETE(req: NextRequest) {
+  const token = req.headers.get("Authorization")?.replace("Bearer ", "");
+  if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const requester = await verifyTokenAndGetProfile(token);
+  if (!requester || requester.role !== "manager") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const { searchParams } = new URL(req.url);
+  const userId = searchParams.get("id");
+  if (!userId) return NextResponse.json({ error: "id is required" }, { status: 400 });
+
+  const admin = getAdminClient();
+
+  // 同じ作業所のメンバーか確認（所長が他作業所のユーザーを削除できないようにする）
+  const { data: target } = await admin
+    .from("profiles")
+    .select("role, work_site_name")
+    .eq("id", userId)
+    .single();
+  if (!target || target.work_site_name !== requester.work_site_name || target.role === "manager") {
+    return NextResponse.json({ error: "削除できません" }, { status: 403 });
+  }
+
+  await admin.from("profiles").delete().eq("id", userId);
+  await admin.auth.admin.deleteUser(userId);
+
+  return NextResponse.json({ success: true });
+}
+
 export async function GET(req: NextRequest) {
   const token = req.headers.get("Authorization")?.replace("Bearer ", "");
   if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

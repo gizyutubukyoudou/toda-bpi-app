@@ -28,6 +28,7 @@ export default function MembersPage() {
   const [members, setMembers]     = useState<Member[]>([]);
   const [fetching, setFetching]   = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [error, setError]         = useState("");
   const [success, setSuccess]     = useState("");
   const [showForm, setShowForm]   = useState(false);
@@ -83,6 +84,24 @@ export default function MembersPage() {
       fetchMembers();
     }
     setSubmitting(false);
+  }
+
+  async function handleDelete(member: Member) {
+    if (!confirm(`${member.display_name}（${member.email}）を削除しますか？\nこの操作は取り消せません。`)) return;
+    setDeletingId(member.id);
+    setError(""); setSuccess("");
+    const res = await fetch(`/api/users?id=${member.id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    const json = await res.json();
+    if (!res.ok) {
+      setError(json.error ?? "削除に失敗しました");
+    } else {
+      setSuccess(`${member.display_name} を削除しました`);
+      fetchMembers();
+    }
+    setDeletingId(null);
   }
 
   return (
@@ -220,6 +239,20 @@ export default function MembersPage() {
                   <p className="text-xs text-gray-500 mt-0.5">{m.email}</p>
                   <p className="text-xs text-gray-400">{m.company}</p>
                 </div>
+                <button
+                  onClick={() => handleDelete(m)}
+                  disabled={deletingId === m.id}
+                  className="flex-shrink-0 p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-40"
+                  aria-label="削除"
+                >
+                  {deletingId === m.id ? (
+                    <div className="w-4 h-4 border-2 border-red-400 border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                    </svg>
+                  )}
+                </button>
               </div>
             ))
           )}
