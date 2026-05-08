@@ -99,7 +99,7 @@ export default function MembersPage() {
       setError(json.error ?? "削除に失敗しました");
     } else {
       setSuccess(`${member.display_name} を削除しました`);
-      fetchMembers();
+      setMembers((prev) => prev.filter((m) => m.id !== member.id));
     }
     setDeletingId(null);
   }
