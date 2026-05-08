@@ -128,6 +128,9 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: "削除できません" }, { status: 403 });
   }
 
+  // 申請の submitted_by 参照を解除してから削除（外部キー制約対策）
+  await admin.from("applications").update({ submitted_by: null }).eq("submitted_by", userId);
+
   const { error: profileDeleteError } = await admin
     .from("profiles").delete().eq("id", userId);
   if (profileDeleteError) {
