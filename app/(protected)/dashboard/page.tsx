@@ -230,18 +230,43 @@ export default function DashboardPage() {
 // ── 通常カード ────────────────────────────────────────────────
 function ApplicationCard({ app }: { app: ApplicationData }) {
   const isPending = ALL_PENDING.includes(app.status);
-  const dateStr = app.useDate
+  const useDateStr = app.useDate
     ? format(new Date(app.useDate), "M月d日(E)", { locale: ja })
+    : "—";
+  const createdDateStr = app.createdAt
+    ? format(new Date(app.createdAt), "M月d日(E)", { locale: ja })
     : "—";
 
   return (
-    <div className={`px-4 py-3.5 flex flex-col gap-1.5 ${isPending ? "border-l-4 border-primary" : "border-l-4 border-transparent"}`}>
+    <div className={`px-4 py-4 flex flex-col gap-2 ${isPending ? "border-l-4 border-primary" : "border-l-4 border-transparent"}`}>
+      {/* 1行目: ステータス + 書類種別 */}
       <div className="flex items-center justify-between gap-2">
-        <StatusBadge status={app.status} size="sm" />
-        <span className="text-xs text-gray-400">{dateStr} 使用</span>
+        <div className="flex items-center gap-2">
+          <StatusBadge status={app.status} size="sm" />
+          <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded">火気使用届</span>
+        </div>
+        <span className="text-xs text-gray-400 flex-shrink-0">申請 {createdDateStr}</span>
       </div>
-      <p className="text-sm font-medium text-gray-900 truncate">{app.submitterCompany}</p>
-      <p className="text-xs text-gray-500 truncate">{app.workSiteName} · {app.workLocation}</p>
+
+      {/* 2行目: 協力会社名 */}
+      <p className="text-sm font-semibold text-gray-900 truncate">{app.submitterCompany}</p>
+
+      {/* 3行目: 作業所・作業場所 */}
+      <div className="flex items-start gap-1">
+        <svg className="w-3.5 h-3.5 text-gray-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+        </svg>
+        <p className="text-xs text-gray-500 truncate">{app.workSiteName}　{app.workLocation}</p>
+      </div>
+
+      {/* 4行目: 作業日 */}
+      <div className="flex items-center gap-1">
+        <svg className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 9v7.5" />
+        </svg>
+        <p className="text-xs text-gray-500">作業日　{useDateStr}　{app.useStartTime && app.useEndTime ? `${app.useStartTime}〜${app.useEndTime}` : ""}</p>
+      </div>
     </div>
   );
 }
