@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { useAuth } from "@/lib/hooks/useAuth";
-import { getSupabaseClient } from "@/lib/supabase";
 
 type Member = {
   id: string;
@@ -23,7 +22,7 @@ const ROLE_COLOR = {
 };
 
 export default function MembersPage() {
-  const { user, profile, loading } = useAuth();
+  const { user, profile, loading, accessToken } = useAuth();
   const router = useRouter();
 
   const [members, setMembers]     = useState<Member[]>([]);
@@ -51,10 +50,8 @@ export default function MembersPage() {
 
   async function fetchMembers() {
     setFetching(true);
-    const supabase = getSupabaseClient();
-    const { data: { session } } = await supabase.auth.getSession();
     const res = await fetch("/api/users", {
-      headers: { Authorization: `Bearer ${session?.access_token}` },
+      headers: { Authorization: `Bearer ${accessToken}` },
     });
     if (res.ok) setMembers(await res.json());
     setFetching(false);
@@ -68,13 +65,11 @@ export default function MembersPage() {
       return;
     }
     setSubmitting(true);
-    const supabase = getSupabaseClient();
-    const { data: { session } } = await supabase.auth.getSession();
     const res = await fetch("/api/users", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${session?.access_token}`,
+        Authorization: `Bearer ${accessToken}`,
       },
       body: JSON.stringify(form),
     });
