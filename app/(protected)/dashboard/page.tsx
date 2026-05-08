@@ -239,17 +239,17 @@ function ApplicationCard({ app }: { app: ApplicationData }) {
 
   return (
     <div className={`px-4 py-4 flex flex-col gap-2 ${isPending ? "border-l-4 border-primary" : "border-l-4 border-transparent"}`}>
-      {/* 1行目: ステータス + 書類種別 */}
+      {/* 1行目: 書類種別 + 申請日 */}
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <StatusBadge status={app.status} size="sm" />
-          <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded">火気使用届</span>
-        </div>
+        <span className="text-sm font-semibold text-gray-900">火気使用届</span>
         <span className="text-xs text-gray-400 flex-shrink-0">申請 {createdDateStr}</span>
       </div>
 
-      {/* 2行目: 協力会社名 */}
-      <p className="text-sm font-semibold text-gray-900 truncate">{app.submitterCompany}</p>
+      {/* 2行目: ステータス */}
+      <div><StatusBadge status={app.status} size="sm" /></div>
+
+      {/* 3行目: 協力会社名 */}
+      <p className="text-xs font-medium text-gray-700 truncate">{app.submitterCompany}</p>
 
       {/* 3行目: 作業所・作業場所 */}
       <div className="flex items-start gap-1">
