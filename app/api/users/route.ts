@@ -34,11 +34,17 @@ export async function POST(req: NextRequest) {
 
   const admin = getAdminClient();
 
-  // 既存ユーザー確認
+  // 既存ユーザー確認（profiles + Auth の両方をチェック）
   const { data: existing } = await admin
     .from("profiles").select("id").eq("email", email).single();
   if (existing) {
     return NextResponse.json({ error: "このメールアドレスはすでに登録されています" }, { status: 409 });
+  }
+  const { data: { users: authUsers } } = await admin.auth.admin.listUsers();
+  if (authUsers.some((u) => u.email === email)) {
+    // profiles になくても Auth に残っている場合は削除してから再作成
+    const orphan = authUsers.find((u) => u.email === email)!;
+    await admin.auth.admin.deleteUser(orphan.id);
   }
 
   const tempPassword = generatePassword();
@@ -122,8 +128,16 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: "削除できません" }, { status: 403 });
   }
 
-  await admin.from("profiles").delete().eq("id", userId);
-  await admin.auth.admin.deleteUser(userId);
+  const { error: profileDeleteError } = await admin
+    .from("profiles").delete().eq("id", userId);
+  if (profileDeleteError) {
+    return NextResponse.json({ error: `プロフィール削除失敗: ${profileDeleteError.message}` }, { status: 500 });
+  }
+
+  const { error: authDeleteError } = await admin.auth.admin.deleteUser(userId);
+  if (authDeleteError) {
+    return NextResponse.json({ error: `認証ユーザー削除失敗: ${authDeleteError.message}` }, { status: 500 });
+  }
 
   return NextResponse.json({ success: true });
 }
