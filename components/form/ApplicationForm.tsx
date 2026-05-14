@@ -335,6 +335,10 @@ export function ApplicationForm({
             ))}
           </fieldset>
           <OtherText id="cb_combustibleOtherText" />
+
+          <div className="border-t border-gray-100 mt-3 pt-3">
+            <CheckboxRow fieldName="cb_none" label="可燃物なし" register={register} />
+          </div>
         </div>
 
         {/* ── 作業環境 ────────────────────────────────── */}
