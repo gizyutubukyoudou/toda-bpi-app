@@ -52,7 +52,37 @@ ${!isError ? `<a href="${APP_URL}/apply/${appId}">申請詳細を見る</a>` : "
     });
   }
 
-  // 所長事前承認
+  // 所長事前承認（簡略ワークフロー）
+  if (reviewer.role === "manager" && row.status === "submitted" && row.workflow_type === "simplified") {
+    const now = new Date().toISOString();
+    await admin.from("applications").update({
+      status:                     "simplified_pre_approved",
+      manager_pre_approved_at:    now,
+      manager_pre_approved_by:    reviewer.id,
+      supervisor_pre_approved_at: now,
+      supervisor_pre_approved_by: reviewer.id,
+    }).eq("id", appId);
+
+    const { data: submitter } = await admin
+      .from("profiles").select("email, display_name").eq("id", row.submitted_by).single();
+
+    if (submitter) {
+      await sendEmail(
+        { email: submitter.email, name: submitter.display_name },
+        `【火気使用届】事前承認されました — ${row.work_site_name}`,
+        `<p>${submitter.display_name} 様</p>
+        <p>所長が火気使用届を事前承認しました。作業終了後、点検・終了報告を記入してください。</p>
+        <p>作業所: ${row.work_site_name} / 使用日: ${row.use_date} / 作業場所: ${row.work_location}</p>
+        <p><a href="${APP_URL}/apply/${appId}/simplified-progress" style="background:#1E40AF;color:#fff;padding:8px 16px;text-decoration:none;border-radius:4px">点検・終了報告へ →</a></p>`
+      ).catch(console.error);
+    }
+
+    return new NextResponse(html("事前承認が完了しました", `${row.work_site_name} / ${row.use_date} の申請を承認しました。申請者に通知メールを送信しました。`), {
+      status: 200, headers: { "Content-Type": "text/html; charset=utf-8" },
+    });
+  }
+
+  // 所長事前承認（正規ワークフロー）
   if (reviewer.role === "manager" && row.status === "submitted") {
     const instructions =
       "火器作業開始前点検は火元責任者、担当社員が実施\n作業中点検は、立ち合い・巡回で実施";
