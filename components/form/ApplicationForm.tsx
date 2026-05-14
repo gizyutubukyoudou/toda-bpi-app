@@ -21,6 +21,8 @@ const schema = z.object({
   fireWorkerName:   z.string().min(1, "火気使用者名を入力してください"),
   watchmanCompany:  z.string(),
   watchmanName:     z.string(),
+  workContentTypes: z.array(z.string()).optional(),
+  workContentOther: z.string().optional(),
 }).passthrough();
 
 // ─── 30分単位の時刻オプション ─────────────────────────────────────────────────
@@ -169,6 +171,44 @@ export function ApplicationForm({
             <div className="flex-1">
               <TextField id="fireWorkerName" label="火気使用者" required placeholder="氏名" />
             </div>
+          </div>
+        </div>
+
+        {/* ── 作業内容 ──────────────────────────────────── */}
+        <SectionHeader title="作業内容" note="任意：該当する作業を選択・記入" />
+        <div className="p-4 bg-white space-y-3">
+          <p className="text-xs text-gray-500 mb-1">作業の種類（複数選択可）</p>
+          <fieldset>
+            <legend className="sr-only">作業内容</legend>
+            <div className="space-y-0">
+              {(["溶接", "切断", "ケレン", "乾燥", "給熱", "その他"] as const).map((type) => {
+                const id = `wct-${type}`;
+                return (
+                  <div key={type} className="checkbox-row">
+                    <input
+                      id={id}
+                      type="checkbox"
+                      value={type}
+                      className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary flex-shrink-0"
+                      {...register("workContentTypes")}
+                    />
+                    <label htmlFor={id}>{type}</label>
+                  </div>
+                );
+              })}
+            </div>
+          </fieldset>
+          <div className="pt-1">
+            <label htmlFor="workContentOther" className="block text-sm text-gray-600 mb-1">
+              作業内容の詳細（任意）
+            </label>
+            <input
+              id="workContentOther"
+              type="text"
+              placeholder="例: A棟3Fスリーブ開口部 溶接補修"
+              className="w-full px-3 py-2.5 border border-gray-300 rounded-md focus:border-primary focus:ring-1 focus:ring-primary outline-none text-base"
+              {...register("workContentOther")}
+            />
           </div>
         </div>
 

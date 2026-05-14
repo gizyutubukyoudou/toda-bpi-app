@@ -69,6 +69,10 @@ export interface ApplicationData {
   watchmanCompany: string;
   watchmanName: string;
 
+  // ── 作業内容 ───────────────────────────────
+  workContentTypes?: string[];
+  workContentOther?: string;
+
   // ── 火気作業の種類（11項目）───────────────
   fw_gasCutting: boolean;
   fw_gasCompression: boolean;
@@ -308,6 +312,7 @@ export function createBlankApplication(): ApplicationFormValues {
     useDate: "", useStartTime: "", useEndTime: "",
     workLocation: "", fireChiefName: "", fireWorkerName: "",
     watchmanCompany: "", watchmanName: "",
+    workContentTypes: [], workContentOther: "",
     fw_gasCutting: false, fw_gasCompression: false, fw_arcWelding: false,
     fw_grinder: false, fw_highSpeedCutter: false, fw_torch: false,
     fw_solderingIron: false, fw_dryer: false, fw_jetHeater: false,

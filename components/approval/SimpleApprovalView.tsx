@@ -59,6 +59,29 @@ export function SimpleApprovalView({ app, reviewerRole }: SimpleApprovalViewProp
         {/* 基本情報 */}
         <BasicInfoCard app={app} />
 
+        {/* 作業内容 */}
+        {((app.workContentTypes && app.workContentTypes.length > 0) || app.workContentOther) && (
+          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+            <div className="px-4 py-2.5 bg-primary-50 border-b border-gray-200">
+              <h3 className="text-sm font-semibold text-primary-700">作業内容</h3>
+            </div>
+            <div className="p-4 space-y-2">
+              {app.workContentTypes && app.workContentTypes.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {app.workContentTypes.map((t) => (
+                    <span key={t} className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              )}
+              {app.workContentOther && (
+                <p className="text-sm text-gray-700">{app.workContentOther}</p>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* チェック済み項目 */}
         <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
           <div className="px-4 py-2.5 bg-primary-50 border-b border-gray-200">

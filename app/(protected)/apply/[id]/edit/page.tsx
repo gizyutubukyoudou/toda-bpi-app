@@ -71,6 +71,8 @@ export default function EditApplicationPage() {
     fireWorkerName:   app.fireWorkerName,
     watchmanCompany:  app.watchmanCompany,
     watchmanName:     app.watchmanName,
+    workContentTypes: app.workContentTypes ?? [],
+    workContentOther: app.workContentOther ?? "",
     fw_gasCutting:    app.fw_gasCutting,
     fw_gasCompression: app.fw_gasCompression,
     fw_arcWelding:    app.fw_arcWelding,

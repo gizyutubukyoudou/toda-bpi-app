@@ -68,6 +68,11 @@ export async function POST(
         <tr><td style="padding:4px 12px 4px 0;color:#666;white-space:nowrap">火元責任者</td><td>${row.fire_chief_name}</td></tr>
         <tr><td style="padding:4px 12px 4px 0;color:#666;white-space:nowrap">作業員</td><td>${row.fire_worker_name}</td></tr>
         <tr><td style="padding:4px 12px 4px 0;color:#666;white-space:nowrap">監視員</td><td>${row.watchman_name}（${row.watchman_company}）</td></tr>
+        ${Array.isArray(row.work_content_types) && row.work_content_types.length > 0
+          ? `<tr><td style="padding:4px 12px 4px 0;color:#666;white-space:nowrap">作業内容</td><td>${(row.work_content_types as string[]).join("・")}${row.work_content_other ? `（${row.work_content_other}）` : ""}</td></tr>`
+          : row.work_content_other
+          ? `<tr><td style="padding:4px 12px 4px 0;color:#666;white-space:nowrap">作業内容</td><td>${row.work_content_other}</td></tr>`
+          : ""}
       </table>
 
       <table style="border-collapse:collapse;font-size:14px;margin-bottom:16px">
