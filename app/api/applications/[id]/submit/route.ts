@@ -26,7 +26,13 @@ export async function POST(
     return NextResponse.json({ error: "Not found or invalid status" }, { status: 404 });
   }
 
-  await admin.from("applications").update({ status: "submitted" }).eq("id", appId);
+  // 簡略ワークフロー：提出時に pcCheckedAt をセット（提出=現地確認済み）
+  const updatePayload: Record<string, unknown> = { status: "submitted" };
+  if (row.workflow_type === "simplified") {
+    updatePayload.pc_checked_at = new Date().toISOString();
+    updatePayload.pc_checked_by = user.id;
+  }
+  await admin.from("applications").update(updatePayload).eq("id", appId);
 
   const { data: reviewers } = await admin
     .from("profiles")

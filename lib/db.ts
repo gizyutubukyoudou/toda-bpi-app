@@ -25,6 +25,7 @@ export function rowToApp(row: Record<string, unknown>): ApplicationData {
     workContentOther:    row.work_content_other as string | undefined,
     // 担当者選択
     selectedSupervisors: (row.selected_supervisors as string[]) ?? [],
+    workflowType: (row.workflow_type as "standard" | "simplified") ?? "standard",
     // 火気作業
     fw_gasCutting:       row.fw_gas_cutting as boolean,
     fw_gasCompression:   row.fw_gas_compression as boolean,
@@ -143,7 +144,14 @@ const FIELD_MAP: Record<string, string> = {
   watchmanName:       "watchman_name",
   workContentTypes:    "work_content_types",
   workContentOther:    "work_content_other",
-  selectedSupervisors: "selected_supervisors",
+  selectedSupervisors:  "selected_supervisors",
+  workflowType:         "workflow_type",
+  pcCombustibleRemoval: "pc_combustible_removal",
+  pcFloorProtection:    "pc_floor_protection",
+  pcFireEquipment:      "pc_fire_equipment",
+  pcOpeningProtection:  "pc_opening_protection",
+  pcWatchmanPlacement:  "pc_watchman_placement",
+  pcFireWorkDisplay:    "pc_fire_work_display",
   fw_gasCutting:      "fw_gas_cutting",
   fw_gasCompression:  "fw_gas_compression",
   fw_arcWelding:      "fw_arc_welding",

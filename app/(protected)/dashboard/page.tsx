@@ -18,6 +18,7 @@ const ALL_PENDING: ApplicationStatus[] = [
   "submitted", "manager_pre_approved", "pre_work_checked",
   "supervisor_pre_approved", "fire_chief_in_progress",
   "in_progress", "completion_reported", "final_approval_pending",
+  "simplified_pre_approved",
 ];
 
 const FILTER_STATUSES: Record<Exclude<FilterTab, "progress">, ApplicationStatus[]> = {
@@ -39,8 +40,9 @@ const STATUS_STEP: Record<ApplicationStatus, number> = {
   in_progress:             5,
   completion_reported:     6,
   final_approval_pending:  7,
-  approved:                8,
-  rejected:                -1,
+  approved:                  8,
+  rejected:                  -1,
+  simplified_pre_approved:   2,
 };
 
 const TURN_LABEL: Record<ApplicationStatus, { label: string; color: string }> = {
@@ -53,8 +55,9 @@ const TURN_LABEL: Record<ApplicationStatus, { label: string; color: string }> = 
   in_progress:             { label: "火元責任者待ち",  color: "bg-blue-100 text-blue-700" },
   completion_reported:     { label: "担当職員待ち",    color: "bg-purple-100 text-purple-700" },
   final_approval_pending:  { label: "所長待ち",      color: "bg-accent-100 text-accent-700" },
-  approved:                { label: "完了",          color: "bg-green-100 text-green-700" },
-  rejected:                { label: "差し戻し",      color: "bg-red-100 text-red-700" },
+  approved:                  { label: "完了",          color: "bg-green-100 text-green-700" },
+  rejected:                  { label: "差し戻し",      color: "bg-red-100 text-red-700" },
+  simplified_pre_approved:   { label: "火元責任者待ち", color: "bg-blue-100 text-blue-700" },
 };
 
 export default function DashboardPage() {
@@ -109,6 +112,17 @@ export default function DashboardPage() {
 
   function getActionHref(app: ApplicationData, role: string): string {
     const base = `/apply/${app.id}`;
+    const simplified = app.workflowType === "simplified";
+
+    // 簡略ワークフロー
+    if (simplified) {
+      if ((role === "supervisor" || role === "manager") && app.status === "submitted")
+        return `${base}/simplified-pre`;
+      if (role === "contractor" && app.status === "simplified_pre_approved")
+        return `${base}/simplified-progress`;
+    }
+
+    // 正規ワークフロー
     if (role === "manager"    && app.status === "submitted")               return `${base}/manager-pre`;
     if (role === "contractor" && app.status === "manager_pre_approved")    return `${base}/pre-check`;
     if (role === "supervisor" && app.status === "pre_work_checked")        return `${base}/supervisor-pre`;
@@ -213,15 +227,27 @@ export default function DashboardPage() {
       )}
 
       {profile?.role === "manager" && (
-        <Link
-          href="/dashboard/members"
-          className="fixed bottom-6 right-6 flex items-center gap-2 bg-primary text-white px-4 py-3 rounded-full shadow-card-md hover:bg-primary/90 active:scale-95 transition-all z-50 text-sm font-medium"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3M13.5 4.5a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM3 20.25a6.75 6.75 0 0 1 13.5 0v.75H3v-.75Z" />
-          </svg>
-          メンバー管理
-        </Link>
+        <div className="fixed bottom-6 right-6 flex flex-col gap-2 items-end z-50">
+          <Link
+            href="/dashboard/settings"
+            className="flex items-center gap-2 bg-white border border-gray-300 text-gray-700 px-4 py-2.5 rounded-full shadow-md hover:bg-gray-50 active:scale-95 transition-all text-sm font-medium"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+            </svg>
+            作業所設定
+          </Link>
+          <Link
+            href="/dashboard/members"
+            className="flex items-center gap-2 bg-primary text-white px-4 py-3 rounded-full shadow-card-md hover:bg-primary/90 active:scale-95 transition-all text-sm font-medium"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3M13.5 4.5a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM3 20.25a6.75 6.75 0 0 1 13.5 0v.75H3v-.75Z" />
+            </svg>
+            メンバー管理
+          </Link>
+        </div>
       )}
     </>
   );

@@ -15,8 +15,9 @@ const STATUS_STYLE: Record<ApplicationStatus, string> = {
   in_progress:             "bg-yellow-100 text-yellow-700",
   completion_reported:     "bg-amber-100 text-amber-700",
   final_approval_pending:  "bg-accent-100 text-accent-700",
-  approved:                "bg-green-100 text-green-700",
-  rejected:                "bg-red-100 text-red-700",
+  approved:                  "bg-green-100 text-green-700",
+  rejected:                  "bg-red-100 text-red-700",
+  simplified_pre_approved:   "bg-blue-100 text-blue-700",
 };
 
 interface StatusBadgeProps {

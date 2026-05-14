@@ -69,6 +69,12 @@ function appToFormDefaults(app: ApplicationData): Partial<ApplicationFormValues>
     fe_fireSand:          app.fe_fireSand,
     fe_wetSpatterSheet:   app.fe_wetSpatterSheet,
     selectedSupervisors:  app.selectedSupervisors ?? [],
+    pcCombustibleRemoval: app.pcCombustibleRemoval ?? false,
+    pcFloorProtection:    app.pcFloorProtection    ?? false,
+    pcFireEquipment:      app.pcFireEquipment      ?? false,
+    pcOpeningProtection:  app.pcOpeningProtection  ?? false,
+    pcWatchmanPlacement:  app.pcWatchmanPlacement  ?? false,
+    pcFireWorkDisplay:    app.pcFireWorkDisplay     ?? false,
   };
 }
 
@@ -80,6 +86,7 @@ export default function NewApplicationPage() {
   const [submitError,  setSubmitError]  = useState<string | null>(null);
   const [prevDefaults,  setPrevDefaults]  = useState<Partial<ApplicationFormValues> | null>(null);
   const [supervisors,   setSupervisors]   = useState<{ id: string; displayName: string }[]>([]);
+  const [workflowType,  setWorkflowType]  = useState<"standard" | "simplified">("standard");
 
   useEffect(() => {
     if (loading || !user || !accessToken) return;
@@ -98,6 +105,11 @@ export default function NewApplicationPage() {
             .map((m) => ({ id: m.id, displayName: m.displayName }))
         );
       })
+      .catch(() => {});
+
+    fetch("/api/work-site-settings", { headers: { Authorization: `Bearer ${accessToken}` } })
+      .then((r) => r.json())
+      .then((d: { workflowType: "standard" | "simplified" }) => setWorkflowType(d.workflowType))
       .catch(() => {});
   }, [user, accessToken, loading]);
 
@@ -158,8 +170,10 @@ export default function NewApplicationPage() {
             workSiteName:     profile?.workSiteName ?? "",
             submitterCompany: profile?.company      ?? "",
             ...prevDefaults,
+            workflowType,
           }}
           supervisors={supervisors}
+          workflowType={workflowType}
           onDraft={handleDraft}
           onSubmit={handleSubmit}
           submitting={submitting}

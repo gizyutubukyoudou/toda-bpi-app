@@ -123,6 +123,12 @@ export default function EditApplicationPage() {
     fe_fireBucket:    app.fe_fireBucket,
     fe_fireSand:      app.fe_fireSand,
     fe_wetSpatterSheet: app.fe_wetSpatterSheet,
+    pcCombustibleRemoval: app.pcCombustibleRemoval ?? false,
+    pcFloorProtection:    app.pcFloorProtection    ?? false,
+    pcFireEquipment:      app.pcFireEquipment      ?? false,
+    pcOpeningProtection:  app.pcOpeningProtection  ?? false,
+    pcWatchmanPlacement:  app.pcWatchmanPlacement  ?? false,
+    pcFireWorkDisplay:    app.pcFireWorkDisplay     ?? false,
   };
 
   return (

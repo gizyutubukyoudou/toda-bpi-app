@@ -44,6 +44,7 @@ interface SupervisorOption {
 interface ApplicationFormProps {
   defaultValues?: Partial<ApplicationFormValues>;
   supervisors?: SupervisorOption[];
+  workflowType?: "standard" | "simplified";
   onDraft:  (values: ApplicationFormValues) => Promise<void>;
   onSubmit: (values: ApplicationFormValues) => Promise<void>;
   submitting?: boolean;
@@ -54,6 +55,7 @@ interface ApplicationFormProps {
 export function ApplicationForm({
   defaultValues,
   supervisors = [],
+  workflowType = "standard",
   onDraft,
   onSubmit,
   submitting = false,
@@ -390,6 +392,31 @@ export function ApplicationForm({
             ))}
           </fieldset>
         </div>
+
+        {/* ── 現地確認チェック（簡略ワークフローのみ）─── */}
+        {workflowType === "simplified" && (
+          <>
+            <SectionHeader title="現地確認チェック" note="作業直前に火元責任者が確認" />
+            <div className="px-4 py-2 bg-amber-50 border-y border-amber-200">
+              <p className="text-xs text-amber-800">簡略ワークフロー：提出時にチェックしてください</p>
+            </div>
+            <div className="p-4 bg-white space-y-1">
+              <fieldset>
+                <legend className="sr-only">現地確認チェック</legend>
+                {([
+                  { field: "pcCombustibleRemoval", label: "可燃物の除去・養生" },
+                  { field: "pcFloorProtection",    label: "下階の防火対策" },
+                  { field: "pcFireEquipment",       label: "消火設備の確認" },
+                  { field: "pcOpeningProtection",   label: "開口部の向こう側への対策" },
+                  { field: "pcWatchmanPlacement",   label: "見張り人の配置・監視手順" },
+                  { field: "pcFireWorkDisplay",     label: "火気作業の表示" },
+                ] as { field: keyof ApplicationFormValues; label: string }[]).map((item) => (
+                  <CheckboxRow key={item.field} fieldName={item.field} label={item.label} register={register} />
+                ))}
+              </fieldset>
+            </div>
+          </>
+        )}
 
         {/* ── 見張り人 ─────────────────────────────────── */}
         <SectionHeader title="見張り人" />

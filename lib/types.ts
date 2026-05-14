@@ -29,7 +29,8 @@ export type ApplicationStatus =
   | "completion_reported"
   | "final_approval_pending"
   | "approved"
-  | "rejected";
+  | "rejected"
+  | "simplified_pre_approved";
 
 export const STATUS_LABEL: Record<ApplicationStatus, string> = {
   draft:                   "下書き",
@@ -41,8 +42,9 @@ export const STATUS_LABEL: Record<ApplicationStatus, string> = {
   in_progress:             "作業終了報告待ち",
   completion_reported:     "残火確認待ち",
   final_approval_pending:  "最終承認待ち",
-  approved:                "承認済み",
-  rejected:                "差し戻し",
+  approved:                  "承認済み",
+  rejected:                  "差し戻し",
+  simplified_pre_approved:   "事前承認済み",
 };
 
 // ─────────────────────────────────────────────
@@ -75,6 +77,9 @@ export interface ApplicationData {
 
   // ── 担当者選択 ──────────────────────────────
   selectedSupervisors?: string[];
+
+  // ── ワークフロー種別 ─────────────────────────
+  workflowType?: "standard" | "simplified";
 
   // ── 火気作業の種類（11項目）───────────────
   fw_gasCutting: boolean;
@@ -211,9 +216,7 @@ export type ApplicationFormValues = Omit<
   "rejectionComment" | "rejectedAt" | "rejectedBy" |
   // ② 所長事前承認
   "managerPreInstructions" | "managerPreApprovedAt" | "managerPreApprovedBy" |
-  // ③-1 現地確認
-  "pcCombustibleRemoval" | "pcFloorProtection" | "pcFireEquipment" |
-  "pcOpeningProtection" | "pcWatchmanPlacement" | "pcFireWorkDisplay" |
+  // ③-1 現地確認（pcCheckedAt/By はサーバーセット）
   "pcCheckedAt" | "pcCheckedBy" |
   // ③-2 担当職員直前承認
   "supervisorPreApprovedAt" | "supervisorPreApprovedBy" |
@@ -335,5 +338,11 @@ export function createBlankApplication(): ApplicationFormValues {
     fp_noFlammable: false,
     fe_fireExtinguisher: false, fe_fireBucket: false,
     fe_fireSand: false, fe_wetSpatterSheet: false,
+    // 現地確認チェック（簡略ワークフロー：提出時に入力）
+    pcCombustibleRemoval: false, pcFloorProtection: false,
+    pcFireEquipment: false, pcOpeningProtection: false,
+    pcWatchmanPlacement: false, pcFireWorkDisplay: false,
+    // ワークフロー種別
+    workflowType: "standard" as const,
   };
 }
