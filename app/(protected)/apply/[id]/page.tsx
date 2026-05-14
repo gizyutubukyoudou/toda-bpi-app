@@ -94,6 +94,22 @@ export default function ApplicationDetailPage() {
         {/* 基本情報 */}
         <BasicInfoCard app={app} />
 
+        {/* 担当者 */}
+        {app.selectedSupervisors && app.selectedSupervisors.length > 0 && (
+          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+            <div className="px-4 py-2.5 bg-primary-50 border-b border-gray-200">
+              <h3 className="text-sm font-semibold text-primary-700">担当者</h3>
+            </div>
+            <div className="px-4 py-3 flex flex-wrap gap-2">
+              {app.selectedSupervisors.map((name) => (
+                <span key={name} className="text-xs bg-primary/10 text-primary px-2.5 py-1 rounded-full font-medium">
+                  {name}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* 作業内容 */}
         {((app.workContentTypes && app.workContentTypes.length > 0) || app.workContentOther) && (
           <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">

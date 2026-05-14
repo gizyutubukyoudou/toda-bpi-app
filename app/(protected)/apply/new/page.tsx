@@ -64,10 +64,11 @@ function appToFormDefaults(app: ApplicationData): Partial<ApplicationFormValues>
     fp_removeInsulation: app.fp_removeInsulation,
     fp_enclose:       app.fp_enclose,
     fp_moveCombustibles: app.fp_moveCombustibles,
-    fe_fireExtinguisher: app.fe_fireExtinguisher,
-    fe_fireBucket:    app.fe_fireBucket,
-    fe_fireSand:      app.fe_fireSand,
-    fe_wetSpatterSheet: app.fe_wetSpatterSheet,
+    fe_fireExtinguisher:  app.fe_fireExtinguisher,
+    fe_fireBucket:        app.fe_fireBucket,
+    fe_fireSand:          app.fe_fireSand,
+    fe_wetSpatterSheet:   app.fe_wetSpatterSheet,
+    selectedSupervisors:  app.selectedSupervisors ?? [],
   };
 }
 
@@ -77,15 +78,28 @@ export default function NewApplicationPage() {
   const [appId,        setAppId]        = useState<string | null>(null);
   const [submitting,   setSubmitting]   = useState(false);
   const [submitError,  setSubmitError]  = useState<string | null>(null);
-  const [prevDefaults, setPrevDefaults] = useState<Partial<ApplicationFormValues> | null>(null);
+  const [prevDefaults,  setPrevDefaults]  = useState<Partial<ApplicationFormValues> | null>(null);
+  const [supervisors,   setSupervisors]   = useState<{ id: string; displayName: string }[]>([]);
 
   useEffect(() => {
-    if (loading || !user) return;
+    if (loading || !user || !accessToken) return;
+
     getApplicationsByUser(user.id).then((apps) => {
       const latest = apps.find((a) => a.status !== "draft");
       if (latest) setPrevDefaults(appToFormDefaults(latest));
     });
-  }, [user, loading]);
+
+    fetch("/api/users", { headers: { Authorization: `Bearer ${accessToken}` } })
+      .then((r) => r.json())
+      .then((members: { id: string; displayName: string; role: string }[]) => {
+        setSupervisors(
+          members
+            .filter((m) => m.role === "supervisor")
+            .map((m) => ({ id: m.id, displayName: m.displayName }))
+        );
+      })
+      .catch(() => {});
+  }, [user, accessToken, loading]);
 
   async function handleDraft(values: ApplicationFormValues) {
     if (!user) return;
@@ -145,6 +159,7 @@ export default function NewApplicationPage() {
             submitterCompany: profile?.company      ?? "",
             ...prevDefaults,
           }}
+          supervisors={supervisors}
           onDraft={handleDraft}
           onSubmit={handleSubmit}
           submitting={submitting}

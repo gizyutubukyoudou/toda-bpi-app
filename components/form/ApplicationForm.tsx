@@ -21,8 +21,9 @@ const schema = z.object({
   fireWorkerName:   z.string().min(1, "火気使用者名を入力してください"),
   watchmanCompany:  z.string(),
   watchmanName:     z.string(),
-  workContentTypes: z.array(z.string()).optional(),
-  workContentOther: z.string().optional(),
+  workContentTypes:    z.array(z.string()).optional(),
+  workContentOther:    z.string().optional(),
+  selectedSupervisors: z.array(z.string()).optional(),
 }).passthrough();
 
 // ─── 30分単位の時刻オプション ─────────────────────────────────────────────────
@@ -35,8 +36,14 @@ for (let h = 0; h < 24; h++) {
 
 // ─── Props ───────────────────────────────────────────────────────────────────
 
+interface SupervisorOption {
+  id: string;
+  displayName: string;
+}
+
 interface ApplicationFormProps {
   defaultValues?: Partial<ApplicationFormValues>;
+  supervisors?: SupervisorOption[];
   onDraft:  (values: ApplicationFormValues) => Promise<void>;
   onSubmit: (values: ApplicationFormValues) => Promise<void>;
   submitting?: boolean;
@@ -46,6 +53,7 @@ interface ApplicationFormProps {
 
 export function ApplicationForm({
   defaultValues,
+  supervisors = [],
   onDraft,
   onSubmit,
   submitting = false,
@@ -173,6 +181,33 @@ export function ApplicationForm({
             </div>
           </div>
         </div>
+
+        {/* ── 担当者選択 ────────────────────────────────── */}
+        {supervisors.length > 0 && (
+          <>
+            <SectionHeader title="担当者" note="作業を担当する職員を選択" />
+            <div className="p-4 bg-white space-y-1">
+              <fieldset>
+                <legend className="sr-only">担当者</legend>
+                {supervisors.map((sv) => {
+                  const id = `sv-${sv.id}`;
+                  return (
+                    <div key={sv.id} className="checkbox-row">
+                      <input
+                        id={id}
+                        type="checkbox"
+                        value={sv.displayName}
+                        className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary flex-shrink-0"
+                        {...register("selectedSupervisors")}
+                      />
+                      <label htmlFor={id}>{sv.displayName}</label>
+                    </div>
+                  );
+                })}
+              </fieldset>
+            </div>
+          </>
+        )}
 
         {/* ── 作業内容 ──────────────────────────────────── */}
         <SectionHeader title="作業内容" note="任意：該当する作業を選択・記入" />

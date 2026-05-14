@@ -21,8 +21,10 @@ export function rowToApp(row: Record<string, unknown>): ApplicationData {
     watchmanCompany:    row.watchman_company as string,
     watchmanName:       row.watchman_name as string,
     // 作業内容
-    workContentTypes: (row.work_content_types as string[]) ?? [],
-    workContentOther: row.work_content_other as string | undefined,
+    workContentTypes:    (row.work_content_types as string[]) ?? [],
+    workContentOther:    row.work_content_other as string | undefined,
+    // 担当者選択
+    selectedSupervisors: (row.selected_supervisors as string[]) ?? [],
     // 火気作業
     fw_gasCutting:       row.fw_gas_cutting as boolean,
     fw_gasCompression:   row.fw_gas_compression as boolean,
@@ -139,8 +141,9 @@ const FIELD_MAP: Record<string, string> = {
   fireWorkerName:  "fire_worker_name",
   watchmanCompany:    "watchman_company",
   watchmanName:       "watchman_name",
-  workContentTypes:   "work_content_types",
-  workContentOther:   "work_content_other",
+  workContentTypes:    "work_content_types",
+  workContentOther:    "work_content_other",
+  selectedSupervisors: "selected_supervisors",
   fw_gasCutting:      "fw_gas_cutting",
   fw_gasCompression:  "fw_gas_compression",
   fw_arcWelding:      "fw_arc_welding",
