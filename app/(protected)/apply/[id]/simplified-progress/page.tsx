@@ -28,14 +28,19 @@ export default function SimplifiedProgressPage() {
   useEffect(() => {
     if (loading) return;
     if (!profile || profile.role !== "contractor") { router.replace("/dashboard"); return; }
-    getApplication(id).then((data) => {
-      if (!data || data.submittedBy !== user?.id || data.status !== "simplified_pre_approved") {
-        router.replace("/dashboard"); return;
-      }
-      setApp(data);
-      setInspectionTime(data.useStartTime ?? "");
-      setFetching(false);
-    });
+    getApplication(id)
+      .then((data) => {
+        if (!data || data.submittedBy !== user?.id || data.status !== "simplified_pre_approved") {
+          router.replace("/dashboard"); return;
+        }
+        setApp(data);
+        setInspectionTime(data.useStartTime ?? "");
+        setFetching(false);
+      })
+      .catch(() => {
+        setError("申請データの取得に失敗しました。ページを再読み込みしてください。");
+        setFetching(false);
+      });
   }, [id, user, profile, loading, router]);
 
   async function handleSubmit() {

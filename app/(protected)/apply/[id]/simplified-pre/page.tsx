@@ -31,13 +31,18 @@ export default function SimplifiedPreApprovePage() {
     if (!profile || !["supervisor", "manager"].includes(profile.role)) {
       router.replace("/dashboard"); return;
     }
-    getApplication(id).then((data) => {
-      if (!data || data.status !== "submitted" || data.workflowType !== "simplified") {
-        router.replace("/dashboard"); return;
-      }
-      setApp(data);
-      setFetching(false);
-    });
+    getApplication(id)
+      .then((data) => {
+        if (!data || data.status !== "submitted" || data.workflowType !== "simplified") {
+          router.replace("/dashboard"); return;
+        }
+        setApp(data);
+        setFetching(false);
+      })
+      .catch(() => {
+        setError("申請データの取得に失敗しました。ページを再読み込みしてください。");
+        setFetching(false);
+      });
   }, [id, profile, loading, router]);
 
   async function handleApprove() {

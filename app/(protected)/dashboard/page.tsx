@@ -65,6 +65,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const [apps,         setApps]        = useState<ApplicationData[]>([]);
   const [fetching,     setFetching]    = useState(true);
+  const [fetchError,   setFetchError]  = useState<string | null>(null);
   const [activeTab,    setActiveTab]   = useState<FilterTab>("pending");
   const [period,       setPeriod]      = useState<PeriodFilter>("week");
 
@@ -73,14 +74,20 @@ export default function DashboardPage() {
     if (!user || !profile) { router.replace("/login"); return; }
     (async () => {
       setFetching(true);
-      let data: ApplicationData[];
-      if (profile.role === "contractor") {
-        data = await getApplicationsByUser(user.id);
-      } else {
-        data = await getApplicationsByWorkSite(profile.workSiteName);
+      setFetchError(null);
+      try {
+        let data: ApplicationData[];
+        if (profile.role === "contractor") {
+          data = await getApplicationsByUser(user.id);
+        } else {
+          data = await getApplicationsByWorkSite(profile.workSiteName);
+        }
+        setApps(data);
+      } catch {
+        setFetchError("申請一覧の取得に失敗しました。ページを再読み込みしてください。");
+      } finally {
+        setFetching(false);
       }
-      setApps(data);
-      setFetching(false);
     })();
   }, [user, profile, loading, router]);
 
@@ -185,6 +192,10 @@ export default function DashboardPage() {
           {fetching ? (
             <div className="flex justify-center py-16">
               <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : fetchError ? (
+            <div className="mx-4 mt-6 p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-700 text-center">
+              {fetchError}
             </div>
           ) : filtered.length === 0 ? (
             <div className="text-center py-16 text-gray-400 text-sm">
