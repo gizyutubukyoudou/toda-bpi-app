@@ -1,19 +1,91 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { ApplicationForm } from "@/components/form/ApplicationForm";
 import { useAuth } from "@/lib/hooks/useAuth";
-import { createDraftApplication, updateDraftApplication } from "@/lib/db";
-import type { ApplicationFormValues } from "@/lib/types";
+import { createDraftApplication, updateDraftApplication, getApplicationsByUser } from "@/lib/db";
+import type { ApplicationData, ApplicationFormValues } from "@/lib/types";
+
+function appToFormDefaults(app: ApplicationData): Partial<ApplicationFormValues> {
+  return {
+    workSiteName:     app.workSiteName,
+    submitterCompany: app.submitterCompany,
+    useStartTime:     app.useStartTime,
+    useEndTime:       app.useEndTime,
+    workLocation:     app.workLocation,
+    fireChiefName:    app.fireChiefName,
+    fireWorkerName:   app.fireWorkerName,
+    watchmanCompany:  app.watchmanCompany,
+    watchmanName:     app.watchmanName,
+    workContentTypes: app.workContentTypes ?? [],
+    workContentOther: app.workContentOther ?? "",
+    fw_gasCutting:    app.fw_gasCutting,
+    fw_gasCompression: app.fw_gasCompression,
+    fw_arcWelding:    app.fw_arcWelding,
+    fw_grinder:       app.fw_grinder,
+    fw_highSpeedCutter: app.fw_highSpeedCutter,
+    fw_torch:         app.fw_torch,
+    fw_solderingIron: app.fw_solderingIron,
+    fw_dryer:         app.fw_dryer,
+    fw_jetHeater:     app.fw_jetHeater,
+    fw_plBurner:      app.fw_plBurner,
+    fw_other:         app.fw_other,
+    fw_otherText:     app.fw_otherText,
+    cb_polystyrene:   app.cb_polystyrene,
+    cb_rigidUrethane: app.cb_rigidUrethane,
+    cb_styrofoam:     app.cb_styrofoam,
+    cb_refrigerantInsulation: app.cb_refrigerantInsulation,
+    cb_flammableOtherText: app.cb_flammableOtherText,
+    cb_organicSolvent: app.cb_organicSolvent,
+    cb_petroleum:     app.cb_petroleum,
+    cb_gasType:       app.cb_gasType,
+    cb_sprayCan:      app.cb_sprayCan,
+    cb_explosiveOtherText: app.cb_explosiveOtherText,
+    cb_cardboard:     app.cb_cardboard,
+    cb_polyethylene:  app.cb_polyethylene,
+    cb_woodWaste:     app.cb_woodWaste,
+    cb_clothThread:   app.cb_clothThread,
+    cb_asphalt:       app.cb_asphalt,
+    cb_urethane:      app.cb_urethane,
+    cb_plywood:       app.cb_plywood,
+    cb_oil:           app.cb_oil,
+    cb_furniture:     app.cb_furniture,
+    cb_plastic:       app.cb_plastic,
+    cb_combustibleOtherText: app.cb_combustibleOtherText,
+    env_belowSleeve:  app.env_belowSleeve,
+    env_wallOpening:  app.env_wallOpening,
+    env_outdoorBelow: app.env_outdoorBelow,
+    env_otherText:    app.env_otherText,
+    fp_nonFlammableCovering: app.fp_nonFlammableCovering,
+    fp_closeOpening:  app.fp_closeOpening,
+    fp_waterSpray:    app.fp_waterSpray,
+    fp_removeInsulation: app.fp_removeInsulation,
+    fp_enclose:       app.fp_enclose,
+    fp_moveCombustibles: app.fp_moveCombustibles,
+    fe_fireExtinguisher: app.fe_fireExtinguisher,
+    fe_fireBucket:    app.fe_fireBucket,
+    fe_fireSand:      app.fe_fireSand,
+    fe_wetSpatterSheet: app.fe_wetSpatterSheet,
+  };
+}
 
 export default function NewApplicationPage() {
-  const { user, accessToken, profile } = useAuth();
+  const { user, accessToken, profile, loading } = useAuth();
   const router = useRouter();
-  const [appId,       setAppId]       = useState<string | null>(null);
-  const [submitting,  setSubmitting]  = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [appId,        setAppId]        = useState<string | null>(null);
+  const [submitting,   setSubmitting]   = useState(false);
+  const [submitError,  setSubmitError]  = useState<string | null>(null);
+  const [prevDefaults, setPrevDefaults] = useState<Partial<ApplicationFormValues> | null>(null);
+
+  useEffect(() => {
+    if (loading || !user) return;
+    getApplicationsByUser(user.id).then((apps) => {
+      const latest = apps.find((a) => a.status !== "draft");
+      if (latest) setPrevDefaults(appToFormDefaults(latest));
+    });
+  }, [user, loading]);
 
   async function handleDraft(values: ApplicationFormValues) {
     if (!user) return;
@@ -69,8 +141,9 @@ export default function NewApplicationPage() {
         )}
         <ApplicationForm
           defaultValues={{
-            workSiteName:     profile?.workSiteName    ?? "",
-            submitterCompany: profile?.company         ?? "",
+            workSiteName:     profile?.workSiteName ?? "",
+            submitterCompany: profile?.company      ?? "",
+            ...prevDefaults,
           }}
           onDraft={handleDraft}
           onSubmit={handleSubmit}
