@@ -103,8 +103,8 @@ export async function POST(
         ${infoTableHtml}
         ${isManager
           ? `<p><a href="${approveUrl}" style="background:#16a34a;color:#fff;padding:10px 20px;text-decoration:none;border-radius:4px;font-weight:bold">事前承認する →</a>
-             &nbsp;&nbsp;<a href="${APP_URL}/apply/${appId}/review" style="background:#1E40AF;color:#fff;padding:10px 20px;text-decoration:none;border-radius:4px">詳細を確認する →</a></p>`
-          : `<p><a href="${APP_URL}/apply/${appId}/review" style="background:#1E40AF;color:#fff;padding:10px 20px;text-decoration:none;border-radius:4px">確認する →</a></p>`
+             &nbsp;&nbsp;<a href="${APP_URL}/apply/${appId}" style="background:#1E40AF;color:#fff;padding:10px 20px;text-decoration:none;border-radius:4px">詳細を確認する →</a></p>`
+          : `<p><a href="${APP_URL}/apply/${appId}" style="background:#1E40AF;color:#fff;padding:10px 20px;text-decoration:none;border-radius:4px">確認する →</a></p>`
         }`;
     }
 
