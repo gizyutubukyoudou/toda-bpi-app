@@ -9,6 +9,13 @@ export default function RootPage() {
   const router = useRouter();
 
   useEffect(() => {
+    // Supabase のパスワードリセットリンクがここに戻ってきた場合、
+    // ハッシュを保持したまま /reset-password に転送する
+    const hash = window.location.hash;
+    if (hash.includes("type=recovery") && hash.includes("access_token")) {
+      window.location.replace("/reset-password" + hash);
+      return;
+    }
     if (loading) return;
     if (user) {
       router.replace("/dashboard");
