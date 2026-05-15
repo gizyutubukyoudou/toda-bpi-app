@@ -39,7 +39,7 @@ export default function LoginPage() {
       const res = await fetch(`${SUPABASE_URL}/auth/v1/recover`, {
         method: "POST",
         headers: { "apikey": SUPABASE_ANON_KEY, "Content-Type": "application/json" },
-        body: JSON.stringify({ email, redirect_to: `${APP_URL}/auth/reset-password` }),
+        body: JSON.stringify({ email, redirect_to: `${APP_URL}/reset-password` }),
       });
       if (!res.ok) throw new Error();
       setMode("sent");
