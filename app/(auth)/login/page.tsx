@@ -7,7 +7,6 @@ type Mode = "login" | "reset" | "sent";
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL!;
 
 export default function LoginPage() {
   const { signIn } = useAuth();
@@ -39,7 +38,7 @@ export default function LoginPage() {
       const res = await fetch(`${SUPABASE_URL}/auth/v1/recover`, {
         method: "POST",
         headers: { "apikey": SUPABASE_ANON_KEY, "Content-Type": "application/json" },
-        body: JSON.stringify({ email, redirect_to: `${APP_URL}/reset-password` }),
+        body: JSON.stringify({ email, redirect_to: `${window.location.origin}/reset-password` }),
       });
       if (!res.ok) throw new Error();
       setMode("sent");
